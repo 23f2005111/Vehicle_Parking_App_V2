@@ -15,8 +15,12 @@
       <div class="right">
         <router-link :to="`/user/edit/${userId}`">Edit Profile</router-link>
 
-        <!-- CSV EXPORT BUTTON -->
-        <button class="btn btn-light btn-sm ms-3" @click="startCSVExport">
+        <!-- CSV EXPORT BUTTON - Only show if reservations exist -->
+        <button 
+          v-if="reservations.length > 0"
+          class="btn btn-light btn-sm ms-3" 
+          @click="startCSVExport"
+        >
           Export CSV
         </button>
       </div>
@@ -298,6 +302,12 @@ nav a:hover {
   opacity: 0.8;
 }
 
+.right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .right a {
   color: white;
   text-decoration: none;
@@ -310,6 +320,26 @@ nav a:hover {
 
 .right a:hover {
   background: rgba(255, 255, 255, 0.3);
+}
+
+.btn-light {
+  background: rgba(255, 255, 255, 0.9);
+  color: #667eea;
+  border: none;
+  font-weight: 600;
+}
+
+.btn-light:hover:not(:disabled) {
+  background: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-light:disabled {
+  background: rgba(255, 255, 255, 0.4);
+  color: #999;
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .container {
@@ -448,6 +478,10 @@ nav a:hover {
   margin-bottom: 15px;
 }
 
+.ms-3 {
+  margin-left: 10px;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .container {
@@ -466,6 +500,10 @@ nav a:hover {
   header {
     flex-direction: column;
     gap: 15px;
+  }
+  
+  .right {
+    flex-direction: column;
   }
 }
 </style>

@@ -71,7 +71,7 @@ def login():   # login of user and admin
 
     if role == "admin":
         admin = User.query.filter_by(role="admin").first()
-        if admin and admin.email == 'admin@gmail.com' and admin.password == password:
+        if admin.username==username and admin.email == email and admin.password == password:
             access_token = create_access_token(identity=admin)
             return jsonify(access_token=access_token, role="admin", user_id=admin.id, email=admin.email, username=admin.username, message="Admin login successful"), 200
         return jsonify(message="Invalid admin credentials"), 400
@@ -82,7 +82,7 @@ def login():   # login of user and admin
         if not user:
             return jsonify(message='User not Registered Please Register'), 400
         
-        if user and user.role == "user":
+        if user.username==username and user.role == "user":
             if user.password == password:
                 access_token = create_access_token(identity=user)
                 return jsonify(access_token=access_token, role="user", email=user.email, user_id=user.id, username=user.username, message="Login successful"), 200
@@ -365,7 +365,6 @@ def admin_summary():   # finding the sumary stats of admin dashboard
 
 @app.route('/user/<int:user_id>')
 @role_required("user")
-@cache.cached(timeout=60, query_string=True)  # Cache for 1 minute per user 
 def user_dashboard(user_id):    # user dashboard and info of parking lot 
     start_time = time.time()
     
@@ -497,7 +496,6 @@ def reserve_spot():  # Reserve a parking spot for the user
 
     cache.delete('admin_dashboard')  # Clear admin dashboard (spot counts changed)
     cache.delete('admin_summary')  # Clear admin summary (stats changed)
-    cache.delete(f'flask_cache_view//user/{user_id}')  # Clear user dashboard cache
     print("Cache cleared after reservation")
 
     return jsonify(message="Spot reserved successfully", reservation_id=new_reservation.id), 201
@@ -542,7 +540,6 @@ def release_spot(res_id):
         
         cache.delete('admin_dashboard')  # Clear admin dashboard (spot counts changed)
         cache.delete('admin_summary')  # Clear admin summary (revenue changed)
-        cache.delete(f'flask_cache_view//user/{reservation.user_id}')  # Clear user dashboard cache
         print("Cache cleared after spot release")
         
         return jsonify(message="Spot released successfully", total_cost=cost), 200
@@ -566,7 +563,6 @@ def remove_reservation(res_id):  #  remove a completed reservation from histpry 
     db.session.delete(reservation)
     db.session.commit()
     
-    cache.delete(f'flask_cache_view//user/{user_id}')  # Clear user dashboard cache
     print("Cache cleared after removing reservation")
 
     return jsonify(message="Reservation removed successfully"), 200
@@ -606,7 +602,6 @@ def edit_profile(user_id):  # Edit user profile with no change in email as it is
         db.session.commit()
         
         cache.delete('admin_users')  # Clear admin users cache
-        cache.delete(f'flask_cache_view//user/{user_id}')  # Clear user dashboard cache
         print("Cache cleared after profile update")
         
         return jsonify(message="Profile updated successfully"), 200
@@ -656,6 +651,7 @@ def trigger_csv_export(user_id): # Trigger async CSV export task
         return jsonify(message="Unauthorized access"), 403
     
     task = export_user_parking_csv.delay(user_id)
+    print(task)
     return jsonify(message="CSV export started", task_id=task.id), 202
 
 
@@ -663,7 +659,7 @@ def trigger_csv_export(user_id): # Trigger async CSV export task
 @role_required("user")
 def check_csv_status(task_id): # Check status of CSV export task
     task_result = AsyncResult(task_id)
-    
+    print(f"Task Result: {task_result}")
     if task_result.ready():
         if task_result.successful():
             return jsonify(status="completed", filename=task_result.result), 200
