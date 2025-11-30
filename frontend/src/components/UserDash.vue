@@ -238,7 +238,7 @@ export default {
       localStorage.removeItem('role');
       localStorage.removeItem('user_id');
       localStorage.removeItem('username');
-      this.$router.push('/login');
+      this.$router.push('/');
     }
   }
 };

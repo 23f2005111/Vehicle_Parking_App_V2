@@ -51,12 +51,11 @@ celery.autodiscover_tasks()
 
 @celery.on_after_finalize.connect
 def setup_periodic_tasks(sender, **kwargs):
-    from application.task import monthly_activity_report, daily_parking_reminder
+    from application.task import monthly_report, daily_parking_reminder
     
-    # For testing: runs every 2 minutes
     sender.add_periodic_task(
         crontab(minute='*/2'),
-        monthly_activity_report.s(),
+        monthly_report.s(),
     )
     
     sender.add_periodic_task(

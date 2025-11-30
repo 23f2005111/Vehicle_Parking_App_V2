@@ -193,7 +193,7 @@ export default {
       localStorage.removeItem('username');
       
       // Redirect to login page
-      this.$router.push('/login');
+      this.$router.push('/');
     }
   }
 };
